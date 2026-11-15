@@ -158,19 +158,6 @@ The project also includes checks for:
 
 A small coordinate-conversion round-trip numerical error was observed in testing (approximately \(1.9 \times 10^{-9}\) m for the tested conversion). This indicates numerical consistency of that conversion test; it does not independently establish the correctness of the underlying geographic reference frame.
 
-## 4. Data Sources and Computational Dependencies
-
-### Astronomical calculations
-
-The project retrieves astronomical ephemeris information through the **NASA/JPL Horizons System**.
-
-- [JPL Horizons System](https://ssd.jpl.nasa.gov/horizons/)
-- [JPL Horizons API Documentation](https://ssd-api.jpl.nasa.gov/doc/horizons.html)
-
-The analysis uses the Horizons API to obtain the apparent geometric positions and relevant angular information for the Sun and Earth.
-
-The configured reference center and coordinate settings are part of the computational implementation and should be considered when reproducing results.
-
 ### Lunar terrain and ROI data
 
 The terrain analysis uses the supplied lunar elevation model and the Site 01 ROI dataset.
@@ -290,17 +277,17 @@ Short-duration events or narrow visibility windows may require finer temporal an
 
 The current prototype brings together the main computational components needed for a terrain-aware lunar environmental analysis:
 
-- [x] Selected-ROI analysis workflow.
-- [x] NASA/JPL Horizons integration.
-- [x] Solar azimuth, elevation, angular diameter, and distance calculations.
-- [x] Terrain-horizon generation from lunar elevation data.
-- [x] Solar-disk visibility estimation.
-- [x] Ideal and terrain-adjusted solar-power estimates.
-- [x] Earth geometric visibility analysis.
-- [x] Visibility and illumination time-series generation.
-- [x] Weighted candidate-site comparison.
-- [x] Interactive Gradio interface.
-- [x] Computational consistency checks on selected datasets and simulation outputs.
+-Selected-ROI analysis workflow.
+-NASA/JPL Horizons integration.
+-Solar azimuth, elevation, angular diameter, and distance calculations.
+- Terrain-horizon generation from lunar elevation data.
+-  Solar-disk visibility estimation.
+- Ideal and terrain-adjusted solar-power estimates.
+-  Earth geometric visibility analysis.
+-  Visibility and illumination time-series generation.
+-  Weighted candidate-site comparison.
+- Interactive Gradio interface.
+- Computational consistency checks on selected datasets and simulation outputs.
 
 ### Not independently verified or not yet implemented
 
@@ -348,3 +335,180 @@ Astronomical ephemeris data are obtained through NASA/JPL Horizons.
 Lunar terrain and ROI data are based on the datasets used in the Site 01 analysis workflow.
 
 **INFINITUM — Exploring the conditions that shape the next steps on the Moon.**
+
+
+## Data Sources, Tools, Acknowledgements & Verification
+
+### 1. NASA Data and Scientific Resources
+
+INFINITUM was developed using publicly available lunar topography and astronomical data resources.
+
+**NASA Goddard Space Flight Center – Planetary Geodesy and Geophysics Archive (PGDA)**
+
+- [High-Resolution LOLA Topography for Lunar South Pole Landing Sites](https://pgda.gsfc.nasa.gov/products/78)
+- [South Pole Landing Site LOLA DEMs](https://pgda.gsfc.nasa.gov/data/LOLA_5mpp/)
+
+The project used the Site 01 (Connecting Ridge) lunar terrain dataset, including:
+- The 5 m/pixel Lunar Digital Elevation Model (LDEM).
+- Site 01 Regions of Interest (ROI) shapefiles.
+- Terrain elevation information used to derive directional terrain horizons.
+
+The PGDA documentation identifies the DEM products as south-polar stereographic datasets using the MOON_ME reference frame associated with DE421.
+
+**NASA/JPL Horizons System**
+
+- [JPL Horizons](https://ssd.jpl.nasa.gov/horizons/)
+- [Horizons API Documentation](https://ssd-api.jpl.nasa.gov/doc/horizons.html)
+
+The Horizons API was used to retrieve time-dependent Sun and Earth observer geometry, including azimuth and elevation information, for the selected lunar locations.
+
+The project used Horizons as an astronomical ephemeris source, while local terrain obstruction and visibility calculations were performed separately.
+
+**NASA Lunar Reconnaissance Orbiter – LOLA**
+
+The lunar elevation products originate from the Lunar Orbiter Laser Altimeter (LOLA) data and processing resources documented by NASA/GSFC PGDA.
+
+Additional archive reference:
+
+- [LOLA Planetary Data System Archive](https://imbrium.mit.edu/)
+
+### 2. Coordinate Reference Frame and Geospatial Verification
+
+Coordinate consistency was treated as an important scientific consideration throughout development.
+
+The NASA/GSFC PGDA documentation specifies that the Site 01 DEM uses south-polar stereographic X/Y coordinates in meters and the MOON_ME reference frame associated with DE421.
+
+However, the original ROI shapefile metadata did not provide sufficient independent confirmation of every coordinate-reference detail needed to establish a complete transformation match with the Horizons observer coordinates.
+
+The project team therefore investigated the coordinate definitions, projection metadata, axis conventions, and potential orientation differences.
+
+The investigation included:
+- Inspecting the original shapefile and its projection metadata.
+- Inspecting the GIS project and GeoPackage coordinate-system information.
+- Reviewing the south-polar stereographic projection and lunar reference-frame definitions.
+- Comparing projected coordinates with geographic ROI coordinates.
+- Contacting Michael K. Barker, associated with the PGDA lunar topography products, to request clarification regarding the original Site 01 ROI coordinate reference frame and its relationship to DE421 / MOON_ME.
+
+A clarification request was sent, but no response was received before the submission deadline.
+
+**Verification status:** The DEM reference-frame information is documented by PGDA. However, a complete independent verification of the original ROI shapefile orientation and its exact transformation consistency with the Horizons coordinate configuration was not completed before submission.
+
+This is documented as an outstanding verification limitation, not as evidence that the coordinates are incorrect.
+
+### 3. Scientific Methods and Processing
+
+The project implemented its own processing and analysis workflows using the supplied terrain and astronomical data.
+
+These included:
+
+- Directional terrain-horizon extraction using the lunar DEM.
+- Terrain obstruction analysis for the Sun and Earth.
+- Solar disk visibility calculations.
+- Solar irradiance and estimated panel-power calculations.
+- Terrain-adjusted solar energy estimation.
+- Earth disk visibility and geometric communication-window analysis.
+- Time-series generation and multi-site comparison.
+
+The terrain-horizon workflow sampled 360 azimuth directions for each selected ROI.
+
+Solar calculations incorporated the solar constant, Sun-Earth distance correction, panel incidence assumptions, and terrain visibility.
+
+The estimated solar power model used a reference panel area of 1 m² and an assumed conversion efficiency of 25%. These are model assumptions rather than measurements of an actual deployed lunar solar panel.
+
+Earth visibility was evaluated geometrically using the apparent Earth position, angular size, and terrain obstruction. It should not be interpreted as a complete radio-frequency communication link budget.
+
+### 4. Software, Programming Languages and Development Tools
+
+The project was developed primarily in Python using Google Colab.
+
+The main tools and libraries included:
+
+- Python – primary programming language.
+- NumPy – numerical computations.
+- Pandas – data processing and time-series analysis.
+- Requests – HTTP requests to external scientific APIs.
+- Matplotlib – scientific plotting and visualization, where used.
+- Plotly – interactive scientific charts.
+- Gradio – interactive mission-control interface.
+- QGIS – geospatial inspection and coordinate-system investigation.
+- GDAL – geospatial raster and terrain-data support.
+- JPL Horizons API – astronomical ephemeris retrieval.
+
+Official documentation:
+
+- [Python](https://www.python.org/)
+- [NumPy](https://numpy.org/)
+- [Pandas](https://pandas.pydata.org/)
+- [Requests](https://requests.readthedocs.io/)
+- [Matplotlib](https://matplotlib.org/)
+- [Plotly](https://plotly.com/python/)
+- [Gradio](https://www.gradio.app/)
+- [QGIS](https://qgis.org/)
+- [GDAL](https://gdal.org/)
+
+### 5. Presentation Images and Visual Assets
+
+Five JPG image files were used in the project's presentation.
+
+Their original source URLs and complete attribution metadata were not preserved in the available local filenames and project records.
+
+Consequently, their original creators and exact source locations could not be independently established before submission.
+
+They are disclosed here as presentation assets with incomplete source attribution rather than being incorrectly attributed to NASA or another organization.
+
+The lunar terrain and scientific analysis data described above are separately attributed to their documented scientific sources.
+
+### 6. AI-Assisted Development Disclosure
+
+ChatGPT (OpenAI) was used as an AI-assisted development tool during the project.
+
+Its assistance included:
+- Brainstorming and refining the project concept.
+- Research assistance and technical explanations.
+- Python code development, debugging, and troubleshooting.
+- Assistance with scientific documentation and interpretation.
+- Editing and improving the English project description and presentation content.
+
+The scientific data retrieval, project-specific calculations, terrain processing, and resulting analysis were implemented and executed within the project's computational workflow.
+
+AI assistance is acknowledged as a development aid and does not constitute independent scientific validation of the resulting calculations.
+
+### 7. Limitations and Verification Status
+
+INFINITUM is an analytical prototype intended to support the evaluation of candidate lunar landing locations.
+
+The following limitations should be considered:
+
+1. Coordinate-reference consistency between the original Site 01 ROI shapefile and the Horizons observer-coordinate configuration requires further independent verification.
+
+2. Terrain obstruction results depend on the available DEM coverage, resolution, and the selected horizon-sampling method.
+
+3. Solar energy estimates depend on stated panel-area and efficiency assumptions and should not be interpreted as hardware performance measurements.
+
+4. Earth visibility represents geometric visibility, not a fully validated telecommunications performance assessment.
+
+5. The analysis does not constitute a certified landing safety assessment or replace mission-specific engineering validation.
+
+6. The five presentation JPG assets have incomplete original-source attribution in the available records.
+
+The team made a best-effort attempt to document the scientific datasets, software, external resources, and AI-assisted contributions available during the hackathon. However, this record is not claimed to be an exhaustive inventory of every asset or intermediate resource used during development.
+
+Further coordinate verification, source recovery, uncertainty analysis, and engineering validation remain potential future improvements.
+
+### 8. Scientific Reference
+
+Barker, M. K., et al. (2021). *Improved LOLA Elevation Maps for South Pole Landing Sites: Error Estimates and Their Impact on Illumination Conditions*. Planetary and Space Science, 203, 105119.
+
+https://doi.org/10.1016/j.pss.2020.105119
+
+NASA/GSFC PGDA – Site 01: Connecting Ridge.
+
+https://pgda.gsfc.nasa.gov/products/78
+
+NASA/JPL – Horizons System.
+
+https://ssd.jpl.nasa.gov/horizons/
+
+---
+
+**Documentation note:** This section reflects the sources, tools, methods, and verification status that could be identified from the project's development records. It distinguishes documented facts, model assumptions, unresolved questions, and incomplete attribution rather than presenting unverified details as established facts.
